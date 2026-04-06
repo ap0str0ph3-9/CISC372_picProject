@@ -57,7 +57,7 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
 typedef struct {
     Image* src;
     Image* dest;
-    double algo[3];
+    Matrix algo;
     int rank;
 } Args;
 
@@ -70,7 +70,7 @@ void *convolute(void* arg){
     Args *args = (Args*)arg;
     Image* srcImage = args->src;
     Image* destImage = args->dest;
-    double algorithm[3] = args->algo;
+    Matrix algorithm = args->algo;
     int rank = args->rank;
     int row,pix,bit,span;
     span=srcImage->bpp*srcImage->bpp;
