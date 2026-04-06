@@ -59,7 +59,13 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
 //            destImage: A pointer to a  pre-allocated (including space for the pixel array) structure to receive the convoluted image.  It should be the same size as srcImage
 //            algorithm: The kernel matrix to use for the convolution
 //Returns: Nothing
-void convolute(Image* srcImage,Image* destImage,Matrix algorithm, int rank){
+void *convolute(void* arg){
+    struct Args *args;
+    args = (struct Args*)arg;
+    srcImage=args->src;
+    destImage=args->dest;
+    algorithm=args->algo;
+    rank=args->rank;
     int row,pix,bit,span;
     span=srcImage->bpp*srcImage->bpp;
     int start=rank*(srcImage->height/threads);
@@ -79,6 +85,8 @@ struct Args{
     Matrix algo;
     int rank;
 };
+
+struct Args args_array[threads];
 
 //Usage: Prints usage information for the program
 //Returns: -1
@@ -127,13 +135,12 @@ int main(int argc,char** argv, char** x){
     destImage.height=srcImage.height;
     destImage.width=srcImage.width;
     destImage.data=malloc(sizeof(uint8_t)*destImage.width*destImage.bpp*destImage.height);
-    for (int i=0; i<threads; i++){
-        struct Args* args = (struct Args*)malloc(sizeof(struct Args));
-        args->src = &srcImage;
-        args->dest = &destImage;
-        args.algo = algorithms[type];
-        args->rank = i;
-        pthread_create(&handles[i], NULL, &convolute, args);
+    for (int i=0;i<threads;i++){
+    args_array[i].src = &srcImage;
+    args_array[i].dest = &destImage;
+    args_array[i].algo = algorithms[type];
+    args_array[i].rank = i;
+    pthread_create(&handles[i],NULL, convolute, (void*)&args_array[i]);
     }
     stbi_write_png("output.png",destImage.width,destImage.height,destImage.bpp,destImage.data,destImage.bpp*destImage.width);
     stbi_image_free(srcImage.data);
