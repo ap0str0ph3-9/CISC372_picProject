@@ -54,18 +54,24 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
     return result;
 }
 
+typedef struct {
+    Image* src;
+    Image* dest;
+    Matrix algo[3];
+    int rank;
+} Args;
+
 //convolute:  Applies a kernel matrix to an image
 //Parameters: srcImage: The image being convoluted
 //            destImage: A pointer to a  pre-allocated (including space for the pixel array) structure to receive the convoluted image.  It should be the same size as srcImage
 //            algorithm: The kernel matrix to use for the convolution
 //Returns: Nothing
 void *convolute(void* arg){
-    struct Args *args;
-    args = (struct Args*)arg;
-    srcImage=args->src;
-    destImage=args->dest;
-    algorithm=args->algo;
-    rank=args->rank;
+    Args *args = (Args*)arg;
+    Image* srcImage = args->src;
+    Image* destImage = args->dest;
+    Matrix algorithm = args->algo;
+    int rank = args->rank;
     int row,pix,bit,span;
     span=srcImage->bpp*srcImage->bpp;
     int start=rank*(srcImage->height/threads);
@@ -79,14 +85,7 @@ void *convolute(void* arg){
     }
 }
 
-struct Args{
-    Image* src;
-    Image* dest;
-    Matrix algo;
-    int rank;
-};
-
-struct Args args_array[threads];
+Args args_array[100];
 
 //Usage: Prints usage information for the program
 //Returns: -1
@@ -114,7 +113,7 @@ int main(int argc,char** argv, char** x){
     t1=time(NULL);
 
     pthread_t* handles;
-    threads = strol(x[1], NULL, 10);
+    threads = strtol(x[1], NULL, 10);
     handles = (pthread_t*)malloc(sizeof(pthread_t)*threads);
 
     stbi_set_flip_vertically_on_load(0); 
