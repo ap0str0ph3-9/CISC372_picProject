@@ -57,7 +57,7 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
 typedef struct {
     Image* src;
     Image* dest;
-    Matrix algo;
+    enum KernelTypes type;
     int rank;
 } Args;
 
@@ -70,19 +70,26 @@ void *convolute(void* arg){
     Args *args = (Args*)arg;
     Image* srcImage = args->src;
     Image* destImage = args->dest;
-    Matrix algorithm = *args->algo;
+    enum KernelTypes type = args->type;
     int rank = args->rank;
     int row,pix,bit,span;
     span=srcImage->bpp*srcImage->bpp;
     int start=rank*(srcImage->height/threads);
     int end=(rank+1)*(srcImage->height/threads)-1;
-    for (row=start;row<end;row++){
-        for (pix=0;pix<srcImage->width;pix++){
-            for (bit=0;bit<srcImage->bpp;bit++){
-                destImage->data[Index(pix,row,srcImage->width,bit,srcImage->bpp)]=getPixelValue(srcImage,pix,row,bit,algorithm);
+    if (srcImage->height%threads!=0&&rank==threads-1) end=srcImage->height;
+    pthread_mutex_t mutex;
+    pthread_mutex_init(&mutex, NULL);
+    pthread_mutex_lock(&mutex);
+        printf("\nthread: %d\nstart: %d\nend: %d\n\n",rank,start,end);
+        for (row=start;row<end;row++){
+            for (pix=0;pix<srcImage->width;pix++){
+                for (bit=0;bit<srcImage->bpp;bit++){
+                    destImage->data[Index(pix,row,srcImage->width,bit,srcImage->bpp)]=getPixelValue(srcImage,pix,row,bit,algorithms[type]);
+                }
             }
         }
-    }
+    pthread_mutex_unlock(&mutex);
+    return NULL;
 }
 
 Args args_array[100];
@@ -108,12 +115,15 @@ enum KernelTypes GetKernelType(char* type){
 
 //main:
 //argv is expected to take 2 arguments.  First is the source file name (can be jpg, png, bmp, tga).  Second is the lower case name of the algorithm.
-int main(int argc,char** argv, char** x){
+int main(int argc,char** argv){
     long t1,t2;
     t1=time(NULL);
 
     pthread_t* handles;
-    threads = strtol(x[1], NULL, 10);
+    int x;
+    printf("How many threads:\n");
+    scanf("%d",&x);
+    threads = x;
     handles = (pthread_t*)malloc(sizeof(pthread_t)*threads);
 
     stbi_set_flip_vertically_on_load(0); 
@@ -135,11 +145,12 @@ int main(int argc,char** argv, char** x){
     destImage.width=srcImage.width;
     destImage.data=malloc(sizeof(uint8_t)*destImage.width*destImage.bpp*destImage.height);
     for (int i=0;i<threads;i++){
-    args_array[i].src = &srcImage;
-    args_array[i].dest = &destImage;
-    args_array[i].algo = algorithms[type];
-    args_array[i].rank = i;
-    pthread_create(&handles[i],NULL, convolute, (void*)&args_array[i]);
+        args_array[i].src = &srcImage;
+        args_array[i].dest = &destImage;
+        args_array[i].type = type;
+        args_array[i].rank = i;
+        printf("im thread %d!\n",i);
+        pthread_create(&handles[i],NULL, convolute, (void*)&args_array[i]);
     }
     stbi_write_png("output.png",destImage.width,destImage.height,destImage.bpp,destImage.data,destImage.bpp*destImage.width);
     stbi_image_free(srcImage.data);
