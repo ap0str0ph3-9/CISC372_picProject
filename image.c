@@ -77,9 +77,7 @@ void *convolute(void* arg){
     int start=rank*(srcImage->height/threads);
     int end=(rank+1)*(srcImage->height/threads)-1;
     if (srcImage->height%threads!=0&&rank==threads-1) end=srcImage->height;
-    pthread_mutex_t mutex;
-    pthread_mutex_init(&mutex, NULL);
-    pthread_mutex_lock(&mutex);
+        //db
         printf("\nthread: %d\nstart: %d\nend: %d\n\n",rank,start,end);
         for (row=start;row<end;row++){
             for (pix=0;pix<srcImage->width;pix++){
@@ -88,7 +86,6 @@ void *convolute(void* arg){
                 }
             }
         }
-    pthread_mutex_unlock(&mutex);
     return NULL;
 }
 
@@ -149,6 +146,9 @@ int main(int argc,char** argv){
         args_array[i].dest = &destImage;
         args_array[i].type = type;
         args_array[i].rank = i;
+    }
+    for (int i=0;i<threads;i++){
+        //db
         printf("im thread %d!\n",i);
         pthread_create(&handles[i],NULL, convolute, (void*)&args_array[i]);
     }
