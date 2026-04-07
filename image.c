@@ -70,7 +70,7 @@ void *convolute(void* arg){
     Args *args = (Args*)arg;
     Image* srcImage = args->src;
     Image* destImage = args->dest;
-    Matrix* algorithm = args->algo;
+    Matrix algorithm = *args->algo;
     int rank = args->rank;
     int row,pix,bit,span;
     span=srcImage->bpp*srcImage->bpp;
@@ -137,7 +137,7 @@ int main(int argc,char** argv, char** x){
     for (int i=0;i<threads;i++){
     args_array[i].src = &srcImage;
     args_array[i].dest = &destImage;
-    args_array[i].algo = algorithms[type];
+    args_array[i].algo = *algorithms[type];
     args_array[i].rank = i;
     pthread_create(&handles[i],NULL, convolute, (void*)&args_array[i]);
     }
