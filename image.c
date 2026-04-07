@@ -57,7 +57,7 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
 typedef struct {
     Image* src;
     Image* dest;
-    Matrix* algo;
+    Matrix algo;
     int rank;
 } Args;
 
@@ -137,7 +137,7 @@ int main(int argc,char** argv, char** x){
     for (int i=0;i<threads;i++){
     args_array[i].src = &srcImage;
     args_array[i].dest = &destImage;
-    args_array[i].algo = *algorithms[type];
+    args_array[i].algo = algorithms[type];
     args_array[i].rank = i;
     pthread_create(&handles[i],NULL, convolute, (void*)&args_array[i]);
     }
