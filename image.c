@@ -149,7 +149,7 @@ int main(int argc,char** argv){
         pthread_create(&handles[j],NULL, convolute, (void*)&args_array[j]);
     }
 
-    for (int k=0;i<threads;i++){
+    for (int k=0;k<threads;k++){
         pthread_join(handles[k],NULL);
     }
 
