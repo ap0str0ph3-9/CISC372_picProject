@@ -77,8 +77,6 @@ void *convolute(void* arg){
     int start=rank*(srcImage->height/threads);
     int end=(rank+1)*(srcImage->height/threads)-1;
     if (srcImage->height%threads!=0&&rank==threads-1) end=srcImage->height;
-        //db
-        printf("\nthread: %d\nstart: %d\nend: %d\n\n",rank,start,end);
         for (row=start;row<end;row++){
             for (pix=0;pix<srcImage->width;pix++){
                 for (bit=0;bit<srcImage->bpp;bit++){
@@ -148,8 +146,6 @@ int main(int argc,char** argv){
         args_array[i].rank = i;
     }
     for (int i=0;i<threads;i++){
-        //db
-        printf("im thread %d!\n",i);
         pthread_create(&handles[i],NULL, convolute, (void*)&args_array[i]);
     }
     stbi_write_png("output.png",destImage.width,destImage.height,destImage.bpp,destImage.data,destImage.bpp*destImage.width);
