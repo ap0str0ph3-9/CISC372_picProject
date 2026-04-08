@@ -75,7 +75,7 @@ void *convolute(void* arg){
     int row,pix,bit,span;
     span=srcImage->bpp*srcImage->bpp;
     int start=rank*(srcImage->height/threads);
-    int end=(rank+1)*(srcImage->height/threads)-1;
+    int end=(rank+1)*(srcImage->height/threads);
     if (srcImage->height%threads!=0&&rank==threads-1) end=srcImage->height;
         for (row=start;row<end;row++){
             for (pix=0;pix<srcImage->width;pix++){
@@ -148,14 +148,16 @@ int main(int argc,char** argv){
     for (int i=0;i<threads;i++){
         pthread_create(&handles[i],NULL, convolute, (void*)&args_array[i]);
     }
+
+    for (int i=0;i<threads;i++){
+        pthread_join(handles[i],NULL);
+    }
+
     stbi_write_png("output.png",destImage.width,destImage.height,destImage.bpp,destImage.data,destImage.bpp*destImage.width);
     stbi_image_free(srcImage.data);
 
     free(destImage.data);
 
-    for (int i=0;i<threads;i++){
-        pthread_join(handles[i],NULL);
-    }
     free(handles);
 
     t2=time(NULL);
