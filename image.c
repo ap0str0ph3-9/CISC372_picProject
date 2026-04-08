@@ -115,10 +115,7 @@ int main(int argc,char** argv){
     t1=time(NULL);
 
     pthread_t* handles;
-    int x;
-    printf("How many threads:\n");
-    scanf("%d",&x);
-    threads = x;
+    threads = 4;
     handles = (pthread_t*)malloc(sizeof(pthread_t)*threads);
 
     stbi_set_flip_vertically_on_load(0); 
