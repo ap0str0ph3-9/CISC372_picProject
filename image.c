@@ -145,12 +145,12 @@ int main(int argc,char** argv){
         args_array[i].type = type;
         args_array[i].rank = i;
     }
-    for (int i=0;i<threads;i++){
-        pthread_create(&handles[i],NULL, convolute, (void*)&args_array[i]);
+    for (int j=0;j<threads;j++){
+        pthread_create(&handles[j],NULL, convolute, (void*)&args_array[j]);
     }
 
-    for (int i=0;i<threads;i++){
-        pthread_join(handles[i],NULL);
+    for (int k=0;i<threads;i++){
+        pthread_join(handles[k],NULL);
     }
 
     stbi_write_png("output.png",destImage.width,destImage.height,destImage.bpp,destImage.data,destImage.bpp*destImage.width);
